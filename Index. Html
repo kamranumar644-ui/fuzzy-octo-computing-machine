@@ -1,1 +1,110 @@
+from pathlib import Path
+import json
+
+products = []
+for i in range(1, 21):
+    products.append({
+        "title": f"Featured Product {i:02d}",
+        "price": f"${9 + i}.99",
+        "description": "A useful, modern product selected for everyday shopping.",
+        "category": ["Electronics", "Home", "Fashion", "Accessories"][i % 4],
+        "image": f"https://via.placeholder.com/700x520?text=Product+{i:02d}",
+        "affiliate": "YOUR_ALIEXPRESS_AFFILIATE_LINK"
+    })
+
+data = json.dumps(products, ensure_ascii=False).replace("</", "<\\/")
+
+page = r'''<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GreenCart — Affiliate Products</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4faf6;color:#173b24}
+header{background:#fff;border-bottom:1px solid #dcebe1;padding:16px 5%;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
+.logo{font-size:24px;font-weight:800;color:#159447}nav a{margin-left:20px;text-decoration:none;color:#31523c;font-size:14px}
+.hero{margin:25px 5%;padding:42px 35px;border-radius:22px;background:linear-gradient(135deg,#dff7e7,#f7fff9)}
+.hero h1{font-size:38px;margin:0 0 10px}.hero p{max-width:650px;color:#607466;line-height:1.7}
+.ad{margin:20px 5%;min-height:120px;border:1px dashed #9fc7aa;border-radius:15px;background:#fff;display:grid;place-items:center;color:#789181}
+.section{padding:10px 5% 50px}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:20px}
+.search{width:280px;padding:12px;border:1px solid #cfe1d5;border-radius:10px;outline:none}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.card{background:#fff;border:1px solid #dcebe1;border-radius:17px;overflow:hidden;box-shadow:0 8px 25px rgba(26,75,42,.07);transition:.2s}
+.card:hover{transform:translateY(-4px)}.image{width:100%;height:210px;object-fit:cover;background:#e8f6ec}
+.content{padding:16px}.title{font-size:17px;margin:0 0 8px}.desc{color:#718076;font-size:13px;line-height:1.6;margin:0 0 12px}
+.row{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.price{font-size:20px;font-weight:700;color:#159447}
+.category{font-size:11px;background:#edf8f0;color:#678170;padding:5px 8px;border-radius:20px}
+.buy{display:block;text-align:center;padding:11px;background:#159447;color:#fff;text-decoration:none;border-radius:9px;font-weight:700}
+.buy:hover{background:#107b39}footer{background:#173b24;color:#dcebe1;text-align:center;padding:28px 5%}
+@media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}.toolbar{flex-direction:column;align-items:stretch}.search{width:100%}}@media(max-width:550px){.grid{grid-template-columns:1fr}.hero h1{font-size:29px}nav{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">GreenCart</div>
+  <nav><a href="#">Home</a><a href="#products">Products</a><a href="#deals">Deals</a><a href="#">Contact</a></nav>
+</header>
+
+<section class="hero" id="deals">
+  <h1>Discover Great Products</h1>
+  <p>Explore selected products and discover useful deals. Every product card supports its own image, title, price, description, category, and AliExpress affiliate link.</p>
+</section>
+
+<div class="ad">ADVERTISEMENT — Replace this area with your ad-network code</div>
+
+<section class="section" id="products">
+  <div class="toolbar">
+    <div><h2 style="margin:0">Featured Products</h2><p style="margin:6px 0 0;color:#718076">20 affiliate-ready product cards</p></div>
+    <input id="search" class="search" placeholder="Search products...">
+  </div>
+  <div id="grid" class="grid"></div>
+</section>
+
+<footer>© 2026 GreenCart · Affiliate storefront</footer>
+
+<script>
+const products = __DATA__;
+const grid = document.getElementById("grid");
+
+function render(items) {
+  grid.innerHTML = items.map(p => `
+    <article class="card">
+      <img class="image" src="${p.image}" alt="${p.title}">
+      <div class="content">
+        <h3 class="title">${p.title}</h3>
+        <p class="desc">${p.description}</p>
+        <div class="row">
+          <span class="price">${p.price}</span>
+          <span class="category">${p.category}</span>
+        </div>
+        <a class="buy" href="${p.affiliate}" target="_blank" rel="nofollow sponsored noopener">
+          View Product
+        </a>
+      </div>
+    </article>
+  `).join("");
+}
+
+document.getElementById("search").addEventListener("input", e => {
+  const q = e.target.value.toLowerCase();
+  render(products.filter(p =>
+    p.title.toLowerCase().includes(q) ||
+    p.description.toLowerCase().includes(q) ||
+    p.category.toLowerCase().includes(q)
+  ));
+});
+
+render(products);
+</script>
+</body>
+</html>'''
+
+page = page.replace("__DATA__", data)
+path = Path("/mnt/data/greencart_20_products.html")
+path.write_text(page, encoding="utf-8")
+
+print(f"HTML created successfully: {path}")
+print(f"20 complete product cards embedded.")
+print(f"File size: {path.stat().st_size:,} bytes")
 
